@@ -1,1 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>ResumeFixer — Upload</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: system-ui, Arial; max-width:760px; margin:40px auto; padding:20px; }
+    input, textarea, select, button { display:block; width:100%; margin:8px 0; padding:10px; }
+    .row { display:flex; gap:8px; }
+    .row > * { flex:1; }
+  </style>
+</head>
+<body>
+  <h1>ResumeFixer — Tailor your resume in minutes</h1>
+  <p>Upload your resume (PDF/DOCX) <strong>or</strong> paste the text below. Then enter target job title.</p>
+
+  <input id="file" type="file" accept=".pdf,.doc,.docx,.txt" />
+  <textarea id="pasted" rows="8" placeholder="Or paste your resume text here..."></textarea>
+
+  <input id="jobtitle" placeholder="Target job title (e.g. Data Scientist)" />
+  <select id="level">
+    <option value="entry">Entry-level / Fresher</option>
+    <option value="mid" selected>Mid-level (2-6 yrs)</option>
+    <option value="senior">Senior / Lead</option>
+  </select>
+
+  <div class="row">
+    <button id="submit">Rewrite & Tailor Resume (Free trial)</button>
+    <button id="download" style="display:none">Download PDF</button>
+  </div>
+
+  <h3>Result preview</h3>
+  <div id="result" style="white-space:pre-wrap; border:1px solid #ddd; padding:12px; min-height:120px;"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
+  <script>
+    const webhook = "https://YOUR_N8N_WEBHOOK_URL"; // replace
+    const fileInput = document.getElementById('file');
+    const pasted = document.getElementById('pasted');
+    const submit = document.getElementById('submit');
+    const result = document.getElementById('result');
+    const downloadBtn = document.getElementById('download');
+    const jobtitle = document.getElementById('jobtitle');
+    const level = document.getElementById('level');
+
+    async function extractPdfText(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+      let text = '';
+      for (let i=1; i<=pdf.numPages; i++){
+        const page = await pdf.getPage(i);
+        const t = await page.getTextContent();
+        const pageText = t.items.map(it => it.str).join(' ');
+        text += '\\n\\n' + pageText;
+      }
+      return text;
+    }
+
+    submit.onclick = async () => {
+      submit.disabled = true;
+      submit.textContent = 'Working...';
+      let resumeText = pasted.value.trim();
+      if (!resumeText && fileInput.files.length) {
+        const file = fileInput.files[0];
+        if (file.type === "application/pdf") {
+          resumeText = await extractPdfText(file);
+        } else {
+          // for docx/txt, read as text (simple)
+          resumeText = await file.text();
+        }
+      }
+      if (!resumeText) {
+        alert('Please upload or paste your resume text.');
+        submit.disabled = false;
+        submit.textContent = 'Rewrite & Tailor Resume (Free trial)';
+        return;
+      }
+
+      const payload = {
+        resumeText,
+        jobTitle: jobtitle.value || "Software Engineer",
+        level: level.value || "mid",
+        email: "" // optional: collect email
+      };
+
+      const resp = await fetch(webhook, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      // data: {rewrittenResume, coverLetter}
+      result.textContent = data.rewrittenResume || "No result";
+      downloadBtn.style.display = 'inline-block';
+      downloadBtn.onclick = () => {
+        const doc = new jsPDF();
+        const lines = doc.splitTextToSize(result.textContent, 180);
+        doc.text(lines, 10, 10);
+        doc.save('Resume-Fixed.pdf');
+      };
+      submit.disabled = false;
+      submit.textContent = 'Rewrite & Tailor Resume (Free trial)';
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
 
