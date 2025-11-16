@@ -1,107 +1,250 @@
+<!--
+  AiVon — Resume Fixer
+  Updated interactive professional single-file HTML for your site.
+  IMPORTANT: Replace the placeholder WEBHOOK_URL value on line ~22 with your n8n webhook URL.
+  Save this file as index.html and push to your GitHub repo, or drop into Netlify to redeploy.
+-->
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>ResumeFixer — Upload</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AiVon — Resume Fixer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: system-ui, Arial; max-width:760px; margin:40px auto; padding:20px; }
-    input, textarea, select, button { display:block; width:100%; margin:8px 0; padding:10px; }
-    .row { display:flex; gap:8px; }
-    .row > * { flex:1; }
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2;
+      --accent-1: linear-gradient(135deg,#7f5af0 0%, #4cc9f0 50%, #00d2ff 100%);
+      --accent-2: linear-gradient(135deg,#ff7ab6 0%, #ffd166 55%, #7ef192 100%);
+      --glass: rgba(255,255,255,0.04);
+      --glass-2: rgba(255,255,255,0.02);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    html,body{height:100%;margin:0;background:radial-gradient(1000px 400px at 10% 10%, rgba(79,70,229,0.12), transparent), radial-gradient(800px 300px at 90% 90%, rgba(6,182,212,0.06), transparent), #071020;color:#e6eef6}
+    .container{max-width:980px;margin:36px auto;padding:28px}
+    header{display:flex;align-items:center;gap:18px}
+    .logo{width:64px;height:64px;border-radius:14px;background:var(--accent-1);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(79,70,229,0.16);font-weight:800;color:white}
+    h1{margin:0;font-size:28px}
+    p.lead{margin:6px 0 18px;color:var(--muted)}
+
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:22px;box-shadow:0 8px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:22px}
+    .input-area{display:flex;flex-direction:column;gap:12px}
+
+    .file-drop{border:2px dashed rgba(255,255,255,0.06);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:18px;border-radius:10px;cursor:pointer;transition:all .18s}
+    .file-drop:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(2,6,23,0.6)}
+    .muted{color:var(--muted);font-size:13px}
+
+    textarea, input[type=text], select{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;font-size:14px}
+
+    .controls{display:flex;gap:12px;align-items:center}
+    .btn{background:var(--accent-1);padding:12px 18px;border-radius:10px;border:0;color:white;font-weight:600;cursor:pointer;box-shadow:0 8px 30px rgba(127,90,240,0.14);transition:transform .12s, box-shadow .12s}
+    .btn:hover{transform:translateY(-3px)}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:600}
+
+    .result-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:12px;height:100%;display:flex;flex-direction:column}
+    .result-preview{flex:1;overflow:auto;white-space:pre-wrap;padding:10px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
+
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .badge{padding:8px 12px;border-radius:999px;background:var(--glass);color:var(--muted);font-weight:600}
+
+    .footer{margin-top:18px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
+
+    /* small screens */
+    @media (max-width:920px){.grid{grid-template-columns:1fr;}.result-card{height:auto}}
+
+    /* subtle loader */
+    .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,0.08);border-top-color:white;animation:spin .9s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* brand mark */
+    .mark{display:flex;gap:8px;align-items:center}
+    .mark .dot{width:10px;height:10px;border-radius:3px;background:white;box-shadow:0 6px 18px rgba(0,0,0,0.5)}
   </style>
 </head>
 <body>
-  <h1>ResumeFixer — Tailor your resume in minutes</h1>
-  <p>Upload your resume (PDF/DOCX) <strong>or</strong> paste the text below. Then enter target job title.</p>
+  <div class="container">
+    <header>
+      <div class="logo">AiVon</div>
+      <div>
+        <h1>AiVon — Resume Fixer</h1>
+        <p class="lead">Upload your resume and get an ATS-optimized, achievement-focused resume and a tailored cover letter in minutes.</p>
+      </div>
+    </header>
 
-  <input id="file" type="file" accept=".pdf,.doc,.docx,.txt" />
-  <textarea id="pasted" rows="8" placeholder="Or paste your resume text here..."></textarea>
+    <main style="margin-top:18px">
+      <div class="panel grid">
+        <section class="input-area">
 
-  <input id="jobtitle" placeholder="Target job title (e.g. Data Scientist)" />
-  <select id="level">
-    <option value="entry">Entry-level / Fresher</option>
-    <option value="mid" selected>Mid-level (2-6 yrs)</option>
-    <option value="senior">Senior / Lead</option>
-  </select>
+          <div class="topbar">
+            <div class="badge">Instant edits · 1‑click cover letter</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="tone" title="Select tone" style="width:160px;padding:8px;border-radius:8px;background:transparent;color:inherit">
+                <option value="professional">Professional</option>
+                <option value="startup">Startup / Casual</option>
+                <option value="academic">Academic</option>
+              </select>
+              <div class="muted">Preview only • Download after payment</div>
+            </div>
+          </div>
 
-  <div class="row">
-    <button id="submit">Rewrite & Tailor Resume (Free trial)</button>
-    <button id="download" style="display:none">Download PDF</button>
+          <label class="file-drop" id="dropzone">
+            <strong id="drop-text">Click or drop a file here (PDF / DOCX)</strong>
+            <div class="muted">Or paste your resume into the editor below. We never share your data.</div>
+            <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.txt" style="display:none" />
+          </label>
+
+          <textarea id="pasted" rows="8" placeholder="Or paste your resume text here..."></textarea>
+
+          <input type="text" id="jobtitle" placeholder="Target job title (e.g. Data Scientist)" />
+
+          <div style="display:flex;gap:10px;align-items:center">
+            <select id="level" style="flex:1;padding:12px;border-radius:8px;background:transparent;color:inherit">
+              <option value="entry">Entry-level / Fresher</option>
+              <option value="mid" selected>Mid-level (2-6 yrs)</option>
+              <option value="senior">Senior / Lead</option>
+            </select>
+            <button id="submit" class="btn">Rewrite & Tailor Resume</button>
+          </div>
+
+          <div class="footer" style="margin-top:8px">
+            <div class="muted">Token use optimized • Privacy-first</div>
+            <div style="display:flex;gap:8px">
+              <button id="sampleBtn" class="btn secondary">Use sample resume</button>
+            </div>
+          </div>
+
+        </section>
+
+        <aside class="result-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:46px;height:46px;border-radius:10px;background:var(--accent-2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#072227">CV</div>
+              <div>
+                <div style="font-weight:700">Result preview</div>
+                <div class="muted" style="font-size:13px">Review the AI rewrite. Download when ready.</div>
+              </div>
+            </div>
+            <div id="actions" style="display:flex;gap:8px;align-items:center">
+              <div id="status" class="muted">Idle</div>
+            </div>
+          </div>
+
+          <div id="result" class="result-preview"></div>
+
+          <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+            <button id="copyBtn" class="btn secondary">Copy</button>
+            <button id="downloadBtn" class="btn" style="background:linear-gradient(90deg,#7f5af0,#4cc9f0);">Download PDF</button>
+          </div>
+
+        </aside>
+      </div>
+
+      <div style="margin-top:18px;display:flex;gap:12px;align-items:center;justify-content:space-between">
+        <div class="muted">Made with ❤️ • AiVon</div>
+        <div style="color:var(--muted);font-size:13px">Need help? DM on LinkedIn or use the Contact link</div>
+      </div>
+    </main>
   </div>
 
-  <h3>Result preview</h3>
-  <div id="result" style="white-space:pre-wrap; border:1px solid #ddd; padding:12px; min-height:120px;"></div>
-
+  <!-- external libs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <script>
-    const webhook = "https://YOUR_N8N_WEBHOOK_URL"; // replace
-    const fileInput = document.getElementById('file');
+    // ===== CONFIGURE THIS =====
+    const WEBHOOK_URL = "https://mighty0me.app.n8n.cloud/webhook/6e8acc30-f31c-402a-9c23-01b8125a379d"; // webhook inserted per your request
+    // ==========================
+
+    // UI hooks
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
     const pasted = document.getElementById('pasted');
     const submit = document.getElementById('submit');
-    const result = document.getElementById('result');
-    const downloadBtn = document.getElementById('download');
     const jobtitle = document.getElementById('jobtitle');
     const level = document.getElementById('level');
+    const resultEl = document.getElementById('result');
+    const status = document.getElementById('status');
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const sampleBtn = document.getElementById('sampleBtn');
+    const tone = document.getElementById('tone');
 
-    async function extractPdfText(file) {
+    dropzone.addEventListener('click',()=>fileInput.click());
+    dropzone.addEventListener('dragover',e=>{e.preventDefault(); dropzone.style.borderColor = 'rgba(255,255,255,0.12)'});
+    dropzone.addEventListener('dragleave',e=>{dropzone.style.borderColor='rgba(255,255,255,0.06)'});
+    dropzone.addEventListener('drop',async (e)=>{e.preventDefault(); fileInput.files = e.dataTransfer.files; await handleFile(fileInput.files[0]);});
+    fileInput.addEventListener('change',async ()=>{ if(fileInput.files.length) await handleFile(fileInput.files[0]); });
+
+    sampleBtn.onclick = ()=>{
+      pasted.value = `John Doe\nSummary:\nSoftware engineer with 3 years experience building data pipelines and analytic dashboards.\nExperience:\n- Built ETL pipelines in Python, reduced processing time by 40%\n- Created dashboards using Tableau and saved analysts 10 hours/week\nEducation:\nB.Tech in CS\nSkills: Python, SQL, Tableau`;
+    };
+
+    async function handleFile(file){
+      try{
+        status.textContent = 'Reading file...';
+        if(file.type === 'application/pdf'){
+          const text = await extractPdfText(file);
+          pasted.value = text;
+        } else {
+          const t = await file.text();
+          pasted.value = t;
+        }
+        status.textContent = 'File loaded';
+      }catch(err){
+        console.error(err); status.textContent='File error';
+      }
+    }
+
+    async function extractPdfText(file){
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
       let text = '';
-      for (let i=1; i<=pdf.numPages; i++){
-        const page = await pdf.getPage(i);
-        const t = await page.getTextContent();
-        const pageText = t.items.map(it => it.str).join(' ');
-        text += '\\n\\n' + pageText;
-      }
-      return text;
+      for(let i=1;i<=pdf.numPages;i++){ const page = await pdf.getPage(i); const tc = await page.getTextContent(); const pageText = tc.items.map(it=>it.str).join(' '); text += '\n\n' + pageText; }
+      return text.trim();
     }
 
-    submit.onclick = async () => {
-      submit.disabled = true;
-      submit.textContent = 'Working...';
-      let resumeText = pasted.value.trim();
-      if (!resumeText && fileInput.files.length) {
-        const file = fileInput.files[0];
-        if (file.type === "application/pdf") {
-          resumeText = await extractPdfText(file);
-        } else {
-          // for docx/txt, read as text (simple)
-          resumeText = await file.text();
-        }
-      }
-      if (!resumeText) {
-        alert('Please upload or paste your resume text.');
-        submit.disabled = false;
-        submit.textContent = 'Rewrite & Tailor Resume (Free trial)';
-        return;
-      }
-
-      const payload = {
-        resumeText,
-        jobTitle: jobtitle.value || "Software Engineer",
-        level: level.value || "mid",
-        email: "" // optional: collect email
-      };
-
-      const resp = await fetch(webhook, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-      });
-      const data = await resp.json();
-      // data: {rewrittenResume, coverLetter}
-      result.textContent = data.rewrittenResume || "No result";
-      downloadBtn.style.display = 'inline-block';
-      downloadBtn.onclick = () => {
-        const doc = new jsPDF();
-        const lines = doc.splitTextToSize(result.textContent, 180);
-        doc.text(lines, 10, 10);
-        doc.save('Resume-Fixed.pdf');
-      };
-      submit.disabled = false;
-      submit.textContent = 'Rewrite & Tailor Resume (Free trial)';
+    copyBtn.onclick = ()=>{
+      navigator.clipboard.writeText(resultEl.textContent || '').then(()=>{status.textContent='Copied to clipboard';setTimeout(()=>status.textContent='Idle',2000)});
     };
+
+    downloadBtn.onclick = ()=>{
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({unit:'pt',format:'a4'});
+      const lines = doc.splitTextToSize(resultEl.textContent || 'No content', 540);
+      doc.setFontSize(11);
+      doc.text(lines, 40, 60);
+      doc.save('AiVon_Rewritten_Resume.pdf');
+    };
+
+    submit.onclick = async ()=>{
+      // front-end validations
+      if(!pasted.value.trim()){alert('Please paste or upload your resume.');return}
+      submit.disabled = true; submit.textContent = 'Working...';
+      status.innerHTML = '<span class="spinner"></span> Generating...';
+
+      // payload
+      const payload = {
+        resumeText: pasted.value,
+        jobTitle: jobtitle.value || 'Software Engineer',
+        level: level.value || 'mid',
+        tone: tone.value || 'professional'
+      };
+
+      try{
+        const res = await fetch(WEBHOOK_URL, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        if(!res.ok){ const text = await res.text(); throw new Error('Server error: '+res.status+' '+text) }
+        const data = await res.json();
+        resultEl.textContent = data.rewrittenResume || data.result || 'No result returned';
+        status.textContent = 'Done';
+      }catch(err){
+        console.error(err); status.textContent = 'Error — check console'; resultEl.textContent = 'Error: '+err.message;
+      }finally{ submit.disabled = false; submit.textContent = 'Rewrite & Tailor Resume'; setTimeout(()=>{ if(status.textContent==='Done') status.textContent='Idle' },1800); }
+    };
+
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
-
